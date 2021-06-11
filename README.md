@@ -33,4 +33,8 @@ var data = {
 };
 ```
 
+## MIT-licensed
+
+MIT-licensed
+
 Enjoy!
