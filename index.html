@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Bar Chart Race HTML5</title>
+        <style>
+            #title {
+                text-align: center;
+                font-size: 20px;
+                font-weight: bold;
+            }
+
+            .item {
+                position: absolute;
+                top: 0;
+                left: 0;
+                height: 20px;
+            }
+
+            .item-title {
+                vertical-align: middle;
+                display: inline-block;
+                width: 100px;
+                text-align: right;
+                line-height: 20px;
+            }
+
+            .item-bar {
+                vertical-align: middle;
+                display: inline-block;
+                width: 100px;
+                height: 20px;
+                /* transition: width .1s; */
+                margin: 0 5px;
+            }
+
+            .item-value {
+                vertical-align: middle;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="title"></div>
+        <div id="container">
+            <div class="item" style="top:10px">
+                <span class="item-title">C</span>
+                <span class="item-bar" style="background-color: chocolate;"> </span>
+                <span class="item-value">100</span>
+            </div>
+            <div class="item" style="top:35px">
+                <span class="item-title">C++</span>
+                <span class="item-bar" style="background-color: cornflowerblue;"> </span>
+                <span class="item-value">200</span>
+            </div>
+            <div class="item" style="top:60px">
+                <span class="item-title">C</span>
+                <span class="item-bar" style="background-color: darkgreen;"> </span>
+                <span class="item-value">150</span>
+            </div>
+        </div>
+        <script>
+            // var id = 0;
+            // id = setInterval(function(){
+            //     // var elem = document.getElementById("bar");
+            //     var elem = document.getElementsByClassName("item-bar")[0];
+            //     var width = parseInt(elem.style.width) + 10;
+            //     if (!width) width = 10;
+            //     elem.style.width = width + "px";
+
+            //     // console.log(elem, width);
+            //     if (width > 1000) clearInterval(id);
+            // }, 100);
+
+            var data = {
+                "titles": ["2021-01", "2021-02", "2021-03", "2021-04", "2021-05", "2021-06", "2021-07", "2021-08", "2021-09", "2021-10", "2021-11", "2021-12"],
+                "items": [
+                    {
+                        "name": "C",
+                        "color": "chocolate",
+                        "values": [100, 200, 100, 200, 100, 200, 100, 200, 100, 200, 100, 200]
+                    },
+                    {
+                        "name": "C++",
+                        "color": "cornflowerblue",
+                        "values": [200, 100, 200, 100, 200, 100, 200, 100, 200, 100, 200, 100]
+                    },
+                    {
+                        "name": "Java",
+                        "color": "darkgreen",
+                        "values": [150, 200, 300, 400, 300, 200, 100, 200, 300, 400, 300, 200]
+                    }
+                ]
+            };
+
+            var conf = {
+                "rankChangeInterval": 1000,
+                "valueChangeInterval": 1000 / 60,
+                "topStart": 50,
+                "step": 25,
+                "maxWidth": 500
+            };
+
+            function sumCharCodes(name) {
+                var sum = 0;
+                for (var i = 0; i < name.length; i++) {
+                    sum += name.charCodeAt(0);
+                }
+                return sum / 1000;
+            }
+
+            function lerp(start, end, rate)
+            {
+                return start + (end - start) * rate;
+            }
+
+            function clamp(val, min, max)
+            {
+                if (val < min) val = min;
+                if (val > max) val = max;
+
+                return val;
+            }
+
+            //valIdx can be float value
+            function getValue(itemIdx, valIdx) {
+                var start = Math.floor(valIdx);
+                var end = Math.ceil(valIdx);
+
+                start = clamp(start, 0, data.titles.length - 1);
+                end = clamp(end, 0, data.titles.length - 1);
+
+                var startVal = data.items[itemIdx].values[start];
+                var endVal = data.items[itemIdx].values[end];
+                var rate = valIdx - start;
+
+                return Math.round(lerp(startVal, endVal, rate));
+            }
+
+            //valIdx can be float value
+            function getRank(itemIdx, valIdx) {
+                var val = getValue(itemIdx, valIdx) + sumCharCodes(data.items[itemIdx].name);
+                var rank = 0;
+
+                for (var i = 0; i < data.items.length; i++) {
+                    if (i == itemIdx) continue;
+
+                    var item = data.items[i];
+                    if ((getValue(i, valIdx) + sumCharCodes(item.name)) > val) rank++;
+                }
+
+                return rank;
+            }
+
+            //index can be float value
+            function setData(index)
+            {
+                if (index >= data.titles.length) return;
+
+                var start = Math.floor(index);
+                var end = Math.ceil(index);
+
+                var title = document.getElementById("title");
+                title.innerText = data.titles[start];
+
+                var maxValue = getMaxValue();
+                var domItems = document.getElementsByClassName("item");
+                var domBars = document.getElementsByClassName("item-bar");
+                var domValues = document.getElementsByClassName("item-value");
+
+                for (var i = 0; i < data.items.length; i++) {
+                    var item = data.items[i];
+                    var val = getValue(i, index);
+                    var domItem = domItems[i];
+                    var domBar = domBars[i];
+                    var domVal = domValues[i];
+
+                    domItem.style.top = (conf.topStart + getRank(i, index) * conf.step) + "px";
+                    domBar.style.width = (val / maxValue * conf.maxWidth) + "px";
+                    domVal.innerText = val;
+                }
+            }
+
+            function getMaxValue()
+            {
+                var max = 0;
+                for (var j=0; j<data.items.length; j++)
+                {
+                    var item = data.items[j];
+                    for (var i=0; i<data.titles.length; i++)
+                    {
+                        if (item.values[i] > max) max = item.values[i];
+                    }
+                }
+
+                return max;
+            }
+
+            document.addEventListener('DOMContentLoaded', function ()
+            {
+                //init dom nodes
+                var container = document.getElementById("container");
+                container.innerHTML = "";
+
+                for (var i=0; i<data.items.length; i++)
+                {
+                    var item = data.items[i];
+                    var div = document.createElement("div");
+                    div.className = "item";
+                    div.style.top = (conf.topStart + i*conf.step) + "px";
+                    div.style.transition = "top " + (conf.rankChangeInterval/1000) + 's';
+                    var html = '<span class="item-title">' + item.name + '</span>';
+                    html += '<span class="item-bar" style="background-color:' + item.color + ';transition: width ' + (conf.valueChangeInterval/1000) + 's;"> </span>';
+                    html += '<span class="item-value">0</span>';
+                    div.innerHTML = html;
+
+                    container.appendChild(div);
+                }
+
+                //init data
+                setData(0);
+
+                //start animation
+                var id = 0;
+                var time = 0;
+                id = setInterval(function(){
+                    time += conf.valueChangeInterval;
+                    var index = time / 1000;
+                    setData(time / 1000);
+
+                    if (index >= data.titles.length) clearInterval(id);
+                }, conf.valueChangeInterval);
+            });
+        </script>
+    </body>
+</html>
