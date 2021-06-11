@@ -4,6 +4,10 @@ Make animated bar chart races in pure HTML5. None extra js libaraies required.
 
 ![](docs/demo.gif)
 
+## Demo Link
+
+[https://jennal.com/bar-chart-race](https://jennal.com/bar-chart-race)
+
 ## Data Format
 
 ```
