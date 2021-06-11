@@ -33,7 +33,7 @@ var data = {
 };
 ```
 
-## MIT-licensed
+## License
 
 MIT-licensed
 
