@@ -137,14 +137,14 @@
 
             //valIdx can be float value
             function getRank(itemIdx, valIdx) {
-                var val = getValue(itemIdx, valIdx) + sumCharCodes(data.items[itemIdx].name);
+                var val = getValue(itemIdx, valIdx) - sumCharCodes(data.items[itemIdx].name);
                 var rank = 0;
 
                 for (var i = 0; i < data.items.length; i++) {
                     if (i == itemIdx) continue;
 
                     var item = data.items[i];
-                    if ((getValue(i, valIdx) + sumCharCodes(item.name)) > val) rank++;
+                    if ((getValue(i, valIdx) - sumCharCodes(item.name)) > val) rank++;
                 }
 
                 return rank;
